@@ -1,0 +1,387 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - Management System</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+
+</head>
+
+<body>
+
+    <!-- ============================= -->
+    <!-- MAIN WRAPPER -->
+    <!-- ============================= -->
+
+    <div class="layout">
+
+
+        <!-- ============================= -->
+        <!-- SIDEBAR -->
+        <!-- ============================= -->
+
+        <aside class="sidebar" id="sidebar">
+
+            <!-- LOGO -->
+
+            <div class="sidebar-logo">
+
+                <div class="logo-box">
+                    MS
+                </div>
+
+                <span class="logo-name">
+                    Management
+                </span>
+
+            </div>
+
+
+            <!-- MENU -->
+
+            <div class="sidebar-content">
+
+                <div class="menu-title">
+                    MENU
+                </div>
+
+
+                <ul class="menu">
+
+
+                    <!-- DASHBOARD -->
+
+                    <li class="menu-item">
+
+                        <a href="#" class="menu-link active">
+
+                            <span class="menu-icon">
+                                ⬜
+                            </span>
+
+                            <span class="menu-text">
+                                Dashboard
+                            </span>
+
+                        </a>
+
+                    </li>
+
+
+                    <!-- MANAGEMENT -->
+
+                    <li class="menu-item">
+
+                        <a href="Error 404" class="menu-link dropdown-btn">
+
+                            <span class="menu-icon">
+                                👥
+                            </span>
+
+                            <span class="menu-text">
+                                Management
+                            </span>
+
+                            <span class="arrow">
+                                ▼
+                            </span>
+
+                        </a>
+
+
+                        <ul class="submenu">
+
+                            <li>
+                                <a href="Error 404">
+                                    Employees
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="Error 404">
+                                    Departments
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="Error 404">
+                                    Attendance
+                                </a>
+                            </li>
+
+                        </ul>
+
+                    </li>
+
+
+                    <!-- USERS -->
+
+                    <li class="menu-item">
+
+                        <a href="#" class="menu-link dropdown-btn">
+
+                            <span class="menu-icon">
+                                👤
+                            </span>
+
+                            <span class="menu-text">
+                                Users
+                            </span>
+
+                            <span class="arrow">
+                                ▼
+                            </span>
+
+                        </a>
+
+
+                        <ul class="submenu">
+
+                            @* <li>
+                                <a asp-controller="RegisterUser" asp-action="RegisterUser">
+                                    Add User
+                                </a>
+                            </li> *@
+
+                            <li>
+                                <a asp-controller="RegisterUser" asp-action="Users">
+                                    Manage Users
+                                </a>
+                            </li>
+
+                            <li>
+                                <a asp-controller="UserRoles" asp-action="Index">
+                                    User Roles
+                                </a>
+                            </li>
+
+                        </ul>
+
+                    </li>
+
+
+                    <!-- SETTINGS -->
+
+                    <li class="menu-item">
+
+                        <a href="Error 404" class="menu-link">
+
+                            <span class="menu-icon">
+                                ⚙️
+                            </span>
+
+                            <span class="menu-text">
+                                Settings
+                            </span>
+
+                        </a>
+
+                    </li>
+
+
+                </ul>
+
+            </div>
+
+
+            <!-- SIDEBAR FOOTER -->
+
+            <div class="sidebar-footer">
+
+                <div class="profile-icon">
+                    A
+                </div>
+
+                <div class="profile-info">
+
+                    <strong>
+                        Admin
+                    </strong>
+
+                    <small>
+                        Administrator
+                    </small>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- ============================= -->
+        <!-- RIGHT SIDE -->
+        <!-- ============================= -->
+
+        <div class="main">
+
+
+            <!-- ============================= -->
+            <!-- NAVBAR -->
+            <!-- ============================= -->
+
+            <header class="navbar">
+
+                <div class="navbar-left">
+
+                    <button id="sidebarButton"
+                            class="sidebar-button">
+
+                        ☰
+
+                    </button>
+
+                    <h5>
+                        Management System
+                    </h5>
+
+                </div>
+
+
+                <div class="navbar-right">
+
+                    <div class="search">
+
+                        <input type="text"
+                               placeholder="Search..." />
+
+                        🔍
+
+                    </div>
+
+
+                    <button class="notification">
+                        🔔
+                    </button>
+
+
+                    <div class="user">
+
+                        <div class="user-avatar">
+                            A
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Admin
+                            </strong>
+
+                            <small>
+                                Administrator
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- ============================= -->
+            <!-- PAGE CONTENT -->
+            <!-- ============================= -->
+
+            <main class="page-content">
+
+                @RenderBody()
+
+            </main>
+
+
+            <!-- ============================= -->
+            <!-- FOOTER -->
+            <!-- ============================= -->
+
+            <footer class="footer">
+
+                <span>
+                    © 2026 Management System
+                </span>
+
+                <span>
+                    All Rights Reserved
+                </span>
+
+            </footer>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- JAVASCRIPT -->
+    <!-- ============================= -->
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+
+    <script>
+
+            // =====================================
+            // SIDEBAR
+            // =====================================
+
+            const sidebarButton =
+                document.getElementById("sidebarButton");
+
+            const sidebar =
+                document.getElementById("sidebar");
+
+
+            sidebarButton.addEventListener("click", function() {
+
+                sidebar.classList.toggle("hide-sidebar");
+
+            });
+
+
+            // =====================================
+            // DROPDOWN MENUS
+            // =====================================
+
+            const dropdownButtons =
+                document.querySelectorAll(".dropdown-btn");
+
+
+            dropdownButtons.forEach(function(button) {
+
+                button.addEventListener("click", function(event) {
+
+                    event.preventDefault();
+
+                    const menuItem =
+                        button.parentElement;
+
+                    menuItem.classList.toggle("open");
+
+                });
+
+            });
+
+    </script>
+
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+
+</html>
