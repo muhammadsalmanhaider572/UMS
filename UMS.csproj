@@ -4,6 +4,22 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>e3a7a94b-6209-459f-a805-be426120335e</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.79" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.0-preview2.26190.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UMS_Application\UMS_Application.csproj" />
+    <ProjectReference Include="..\UMS_Domain\UMS_Domain.csproj" />
+    <ProjectReference Include="..\UMS_Infrastructure\UMS_Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\User Management\" />
+  </ItemGroup>
 
 </Project>

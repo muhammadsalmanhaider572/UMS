@@ -1,3 +1,6 @@
 <Solution>
+  <Project Path="../UMS_Application/UMS_Application.csproj" />
+  <Project Path="../UMS_Domain/UMS_Domain.csproj" />
+  <Project Path="../UMS_Infrastructure/UMS_Infrastructure.csproj" />
   <Project Path="UMS.csproj" />
 </Solution>

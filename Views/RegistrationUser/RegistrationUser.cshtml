@@ -1,0 +1,83 @@
+﻿<div class="container mt-4">
+
+    <div class="card">
+
+        <div class="card-header bg-primary text-white">
+            <h3>@(ViewBag.EditUser == true ? "Edit User" : "User Registration")</h3>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <input type="hidden"
+                       id="hdnUserId"
+                       value="@(ViewBag.User != null ? ViewBag.User.Id : "")" />
+
+                <div class="col-md-6 mb-3">
+                    <label>First Name</label>
+                    <input type="text" id="txtFirstName" class="form-control" value="@(ViewBag.User != null ? ViewBag.User.FirstName : "")">
+                    <small id="errFirstName" class="text-danger"></small>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Last Name</label>
+                    <input type="text" id="txtLastName" class="form-control" value="@(ViewBag.User != null ? ViewBag.User.LastName : "")">
+                    <small id="errLastName" class="text-danger"></small>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Email</label>
+                    <input type="email" id="txtEmail" class="form-control" list="emailList" value="@(ViewBag.User != null ? ViewBag.User.Email : "")">
+                    <datalist id="emailList"></datalist>
+                    <small id="errEmail" class="text-danger"></small>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Phone</label>
+                    <input type="text" id="txtPhone" class="form-control" list="phoneList" value="@(ViewBag.User != null ? ViewBag.User.Phone : "03")">
+                    <datalist id="phoneList"></datalist>
+                    <small id="errPhone" class="text-danger"></small>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Username</label>
+                    <input type="text" id="txtUsername" class="form-control" list="usernameList" value="@(ViewBag.User != null ? ViewBag.User.Username : "")">
+                    <datalist id="usernameList"></datalist>
+                    <small id="errUsername" class="text-danger"></small>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Password</label>
+                    <div class="input-group">
+                        <input type="password" id="txtPassword" class="form-control" value="">
+                        <button class="btn btn-outline-secondary btn-toggle-password" type="button" id="btnTogglePassword" title="Show/Hide Password">
+                            <i class="bi bi-eye" id="pwdIcon"></i>
+                        </button>
+                    </div>
+                    <small id="errPassword" class="text-danger"></small>
+                </div>
+
+            </div>
+
+            <button type="button"
+                    class="btn btn-success" id="btnRegister"
+                    onclick="RegisterUser()">
+                @(ViewBag.EditUser == true ? "Update" : "Register")
+            </button>
+
+            <button type="button"
+                    class="btn btn-secondary"
+                    onclick="ClearForm()">
+                Clear
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts
+{
+    <script src="~/js/AddUser.js"></script>
+}
