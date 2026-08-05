@@ -3,7 +3,7 @@ using UMS.Models;
 using UMS.Services.Interfaces;
 using System;
 using System.Collections;
-using System.Reflection;
+using UMS.Models;
 
 namespace UMS.Controllers
 {
@@ -21,7 +21,7 @@ namespace UMS.Controllers
         }
 
         //==========================================
-        // GET USER BY ID (for edit)
+        // GET USER BY ID (FOR EDIT)
         //==========================================
         [HttpGet("/RegistrationUser/GetUser/{id}")]
         public IActionResult GetUser(int id)
@@ -29,16 +29,35 @@ namespace UMS.Controllers
             try
             {
                 var user = _service.GetUserById(id);
-                if (user == null) return NotFound(new { message = "User not found" });
+
+                if (user == null)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "User not found."
+                    });
+                }
+
                 return Json(user);
             }
             catch (Exception ex)
             {
                 if (_env.IsDevelopment())
                 {
-                    return StatusCode(500, new { success = false, message = ex.Message, detail = ex.ToString() });
+                    return StatusCode(500, new
+                    {
+                        success = false,
+                        message = ex.Message,
+                        detail = ex.ToString()
+                    });
                 }
-                return StatusCode(500, new { success = false, message = "Unable to load user." });
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Unable to load user."
+                });
             }
         }
 
@@ -51,15 +70,29 @@ namespace UMS.Controllers
             try
             {
                 var deleted = _service.DeleteUser(id);
+
                 if (!deleted)
                 {
-                    return StatusCode(500, new { success = false, message = "Failed to delete user." });
+                    return StatusCode(500, new
+                    {
+                        success = false,
+                        message = "Failed to delete user."
+                    });
                 }
-                return Ok(new { success = true, message = "User deleted." });
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "User deleted successfully."
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
             }
         }
 
@@ -78,12 +111,12 @@ namespace UMS.Controllers
         [HttpGet("/RegistrationUser/RegistrationUser")]
         public IActionResult RegistrationUser([FromQuery] int? id)
         {
-            // If an id is provided, load the user and pass via ViewBag for server-side rendering of edit form
             if (id.HasValue && id.Value > 0)
             {
                 try
                 {
                     var user = _service.GetUserById(id.Value);
+
                     if (user != null)
                     {
                         ViewBag.EditUser = true;
@@ -104,7 +137,7 @@ namespace UMS.Controllers
         }
 
         //==========================================
-        // GET USERS
+        // GET ALL USERS
         //==========================================
         [HttpGet("/RegistrationUser/GetUsers")]
         public IActionResult GetUsers()
@@ -112,7 +145,6 @@ namespace UMS.Controllers
             try
             {
                 var users = _service.GetUsers();
-
                 return Json(users);
             }
             catch (Exception ex)
@@ -136,9 +168,9 @@ namespace UMS.Controllers
         }
 
         //==========================================
-        // REGISTER USER
+        // REGISTER / UPDATE USER
         //==========================================
-        [HttpPost("/RegistrationUser/RegisterUser")]
+        [HttpPost("/RegistrationUser/RegisterUser") ]
         public IActionResult RegisterUser([FromBody] User user)
         {
             try
@@ -152,41 +184,35 @@ namespace UMS.Controllers
                     });
                 }
 
-                object result = _service.RegisterUser(user);
+                // Duplicate validation has been removed.
+                // JavaScript performs the client-side check.
+                // The Stored Procedure should still handle duplicates.
 
-                int respStatus = 200;
-                string respMessage = "";
-
-                if (result != null)
-                {
-                    if (result is IDictionary dict)
-                    {
-                        foreach (DictionaryEntry item in dict)
-                        {
-                            string key = item.Key?.ToString();
-
-                            if (key.Equals("Status", StringComparison.OrdinalIgnoreCase))
-                                respStatus = Convert.ToInt32(item.Value);
-
-                            if (key.Equals("Message", StringComparison.OrdinalIgnoreCase))
-                                respMessage = item.Value?.ToString();
-                        }
-                    }
-                }
+                RegisterUserResponse result = _service.RegisterUser(user);
 
                 return Ok(new
                 {
-                    status = respStatus,
-                    message = respMessage,
+                    status = result.Status,
+                    message = result.Message,
                     data = result
                 });
             }
             catch (Exception ex)
             {
+                if (_env.IsDevelopment())
+                {
+                    return StatusCode(500, new
+                    {
+                        status = 500,
+                        message = ex.Message,
+                        detail = ex.ToString()
+                    });
+                }
+
                 return StatusCode(500, new
                 {
                     status = 500,
-                    message = ex.Message
+                    message = "An unexpected error occurred."
                 });
             }
         }

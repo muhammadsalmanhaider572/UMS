@@ -2,11 +2,15 @@
 // Clean, DOM-ready initialization so handlers always attach.
 // Global functions exposed via window.* so inline onclick attributes work.
 
+
 (function ($) {
     'use strict';
+    // Store all users loaded from database
+    var usersList = [];
     // Validation regexes
-    var emailFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    var usernameRegex = /^[A-Za-z]+$/; // letters only
+    var emailFormat = /^[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
+    var usernameRegex = /^[a-z]+$/; // lowercase letters only
+    var nameRegex = /^[A-Za-z]+(?: [A-Za-z]+)*$/; // letters and spaces only
     var phoneRegex = /^03[0-9]{9}$/; // starts with 03 and 11 digits total
     var passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&*!]).{8,}$/;
 
@@ -36,6 +40,18 @@
     function addSuggestionOptions(user) {
         try {
             if (!user) return;
+            if (user.FirstName) {
+                var firstName = user.FirstName || user.firstName;
+                if (firstName && $('#firstNameList option[value="' + firstName + '"]').length === 0) {
+                    $('#firstNameList').append($('<option>').val(firstName));
+                }
+            }
+            if (user.LastName) {
+                var lastName = user.LastName || user.lastName;
+                if (lastName && $('#lastNameList option[value="' + lastName + '"]').length === 0) {
+                    $('#lastNameList').append($('<option>').val(lastName));
+                }
+            }
             if (user.Username) {
                 var uname = user.Username || user.username;
                 if (uname && $('#usernameList option[value="' + uname + '"]').length === 0) {
@@ -57,6 +73,11 @@
         } catch (e) { console.error(e); }
     }
 
+    function updateClearButtonLabel() {
+        var editing = (($('#hdnUserId').val() || '').toString().trim() !== '');
+        $('#btnClear').text(editing ? 'Cancel' : 'Clear');
+    }
+
     // Clear form values
     function ClearForm() {
         $("#txtFirstName").val("");
@@ -68,6 +89,25 @@
         $("#hdnUserId").val('');
         $('#btnRegister').text('Register');
         clearErrors();
+        updateClearButtonLabel();
+    }
+
+    function applyFieldErrors(fieldErrors) {
+        if (!fieldErrors) return;
+        if (fieldErrors.Username) { $('#errUsername').text(fieldErrors.Username); }
+        if (fieldErrors.Email) { $('#errEmail').text(fieldErrors.Email); }
+        if (fieldErrors.Phone) { $('#errPhone').text(fieldErrors.Phone); }
+        if (fieldErrors.Password) { $('#errPassword').text(fieldErrors.Password); }
+    }
+
+    function CancelEditOrClear() {
+        var editing = (($('#hdnUserId').val() || '').toString().trim() !== '');
+        if (editing) {
+            window.location.href = '/RegisterUser/User';
+            return;
+        }
+
+        ClearForm();
     }
 
     // Validate current form values, returns boolean
@@ -86,10 +126,16 @@
         if (!firstName) {
             $("#errFirstName").text("First Name is required.");
             valid = false;
+        } else if (!nameRegex.test(firstName)) {
+            $("#errFirstName").text("First Name can only contain letters and spaces.");
+            valid = false;
         }
 
         if (!lastName) {
             $("#errLastName").text("Last Name is required.");
+            valid = false;
+        } else if (!nameRegex.test(lastName)) {
+            $("#errLastName").text("Last Name can only contain letters and spaces.");
             valid = false;
         }
 
@@ -97,17 +143,8 @@
             $("#errEmail").text("Email is required.");
             valid = false;
         } else if (!emailFormat.test(email)) {
-            $("#errEmail").text("Enter a valid Email.");
+            $("#errEmail").text("Email must be lowercase and use a valid format.");
             valid = false;
-        } else {
-            // Must contain both letters and digits and no spaces
-            if (!/[A-Za-z]/.test(email) || !/\d/.test(email)) {
-                $("#errEmail").text("Email must contain both letters and digits.");
-                valid = false;
-            } else if (/\s/.test(email)) {
-                $("#errEmail").text("Email must not contain spaces.");
-                valid = false;
-            }
         }
 
         if (!phone) {
@@ -122,7 +159,7 @@
             $("#errUsername").text("Username is required.");
             valid = false;
         } else if (!usernameRegex.test(username)) {
-            $("#errUsername").text("Username must contain letters only (no digits or spaces).");
+            $("#errUsername").text("Username must contain lowercase letters only.");
             valid = false;
         }
 
@@ -143,10 +180,66 @@
         return valid;
     }
 
+    function checkDuplicateFields() {
+
+        var id = parseInt($("#hdnUserId").val()) || 0;
+
+        var username = $("#txtUsername").val().trim().toLowerCase();
+        var email = $("#txtEmail").val().trim().toLowerCase();
+        var phone = $("#txtPhone").val().trim();
+        var password = $("#txtPassword").val();
+
+        var duplicateFound = false;
+
+        clearErrors();
+
+        $.each(usersList, function (index, user) {
+
+            // Ignore same user while editing
+            if (id > 0 && user.Id == id)
+                return true;
+
+            if (user.Username &&
+                user.Username.toLowerCase() === username) {
+
+                $("#errUsername").text("Username already exists.");
+                duplicateFound = true;
+            }
+
+            if (user.Email &&
+                user.Email.toLowerCase() === email) {
+
+                $("#errEmail").text("Email already exists.");
+                duplicateFound = true;
+            }
+
+            if (user.Phone &&
+                user.Phone === phone) {
+
+                $("#errPhone").text("Phone already exists.");
+                duplicateFound = true;
+            }
+
+            if (user.Password &&
+                user.Password === password) {
+
+                $("#errPassword").text("Password already exists.");
+                duplicateFound = true;
+            }
+
+        });
+
+        return !duplicateFound;
+    }
+
     // AJAX submit
     function RegisterUser() {
         clearErrors();
-        if (!validateForm()) return;
+        if (!validateForm())
+            return;
+
+        if (!checkDuplicateFields())
+            return;
 
         // build user object from form fields
         var user = {
@@ -175,17 +268,46 @@
                     }
 
                     if (!success) {
-                        // handle validation or error messages
-                        if (response && response.fieldErrors) {
-                            var messages = [];
-                            if (response.fieldErrors.Username) { $('#errUsername').text(response.fieldErrors.Username); messages.push(response.fieldErrors.Username); }
-                            if (response.fieldErrors.Email) { $('#errEmail').text(response.fieldErrors.Email); messages.push(response.fieldErrors.Email); }
-                            if (response.fieldErrors.Phone) { $('#errPhone').text(response.fieldErrors.Phone); messages.push(response.fieldErrors.Phone); }
-                            Swal.fire({ icon: 'warning', title: 'Validation', text: messages.join('\n') || response.message || 'Validation failed' });
+
+                        clearErrors();
+
+                        // Email Duplicate
+                        if (response.status == 409 &&
+                            response.message.toLowerCase().indexOf("email") >= 0) {
+
+                            $("#errEmail").text(response.message);
+
+                            Swal.fire({
+                                icon: "warning",
+                                title: "Duplicate Email",
+                                text: response.message
+                            });
+
                             return;
                         }
 
-                        Swal.fire({ icon: 'error', title: 'Error', text: (response && response.message) ? response.message : 'Save failed' });
+                        // Username Duplicate
+                        if (response.status == 409 &&
+                            response.message.toLowerCase().indexOf("username") >= 0) {
+
+                            $("#errUsername").text(response.message);
+
+                            Swal.fire({
+                                icon: "warning",
+                                title: "Duplicate Username",
+                                text: response.message
+                            });
+
+                            return;
+                        }
+
+                        // Any other error
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: response.message || "Save failed."
+                        });
+
                         return;
                     }
 
@@ -214,31 +336,31 @@
                         '</tr>';
 
                     Swal.fire({ icon: 'success', title: 'Success', text: (response && response.message) ? response.message : 'Saved' }).then(function () {
-                        if (user && user.Id && parseInt(user.Id) > 0) {
-                            // edit: update existing row if visible, else reload grid
-                            var editBtn = $('#tblUsers tbody')
-                                .find("button.editBtn[data-id='" + user.Id + "']");
-                            if (editBtn.length) {
-                                var $tr = editBtn.closest('tr');
-                                $tr.find('td').eq(1).text(firstName);
-                                $tr.find('td').eq(2).text(lastName);
-                                $tr.find('td').eq(3).text(email);
-                                $tr.find('td').eq(4).text(phone);
-                                $tr.find('td').eq(5).text(username);
-                                $tr.find('td').eq(6).text(createdDate ? FormatDate(createdDate) : $tr.find('td').eq(6).text());
-                            } else {
-                                window.location.href = '/RegisterUser/User';
-                                return;
-                            }
+                        if (!user || !user.Id || parseInt(user.Id) <= 0) {
+                            window.location.href = '/RegisterUser/User';
+                            return;
+                        }
+
+                        var editBtn = $('#tblUsers tbody')
+                            .find("button.editBtn[data-id='" + user.Id + "']");
+                        if (editBtn.length) {
+                            var $tr = editBtn.closest('tr');
+                            $tr.find('td').eq(1).text(firstName);
+                            $tr.find('td').eq(2).text(lastName);
+                            $tr.find('td').eq(3).text(email);
+                            $tr.find('td').eq(4).text(phone);
+                            $tr.find('td').eq(5).text(username);
+                            $tr.find('td').eq(6).text(createdDate ? FormatDate(createdDate) : $tr.find('td').eq(6).text());
                         } else {
-                            // create: append
-                            if ($('#tblUsers tbody').length) $('#tblUsers tbody').append(rowHtml);
+                            window.location.href = '/RegisterUser/User';
+                            return;
                         }
 
                         // update datalist suggestions
                         try { addSuggestionOptions({ Username: username, Email: email, Phone: phone }); } catch (e) { }
 
                         ClearForm();
+
                         if (window.reloadUsers) window.reloadUsers();
                     });
                     $("#btnRegister").text("Register");
@@ -252,18 +374,33 @@
                 }
             },
             error: function (xhr) {
+                var response = null;
                 var msg = 'Server error';
                 try {
                     if (xhr && xhr.responseJSON) {
-                        var json = xhr.responseJSON;
-                        if (json.message) msg = json.message;
-                        else if (json.fieldErrors) msg = Object.values(json.fieldErrors).join('\n');
+                        response = xhr.responseJSON;
                     } else if (xhr && xhr.responseText) {
                         var txt = xhr.responseText;
-                        try { var parsed = JSON.parse(txt); if (parsed.message) msg = parsed.message; else if (parsed.fieldErrors) msg = Object.values(parsed.fieldErrors).join('\n'); else msg = txt; } catch (e) { msg = txt; }
+                        try { response = JSON.parse(txt); } catch (e) { response = null; }
+                    }
+
+                    if (response) {
+                        if (response.fieldErrors) {
+                            applyFieldErrors(response.fieldErrors);
+                            var messages = [];
+                            if (response.fieldErrors.Username) { messages.push(response.fieldErrors.Username); }
+                            if (response.fieldErrors.Email) { messages.push(response.fieldErrors.Email); }
+                            if (response.fieldErrors.Phone) { messages.push(response.fieldErrors.Phone); }
+                            if (response.fieldErrors.Password) { messages.push(response.fieldErrors.Password); }
+                            msg = messages.join('\n') || response.message || 'Validation failed';
+                        } else if (response.message) {
+                            msg = response.message;
+                        }
                     }
                 } catch (e) { console.error('Error parsing error response', e); }
-                Swal.fire({ icon: 'error', title: 'Server Error', text: msg });
+
+                var icon = (response && response.fieldErrors) ? 'warning' : 'error';
+                Swal.fire({ icon: icon, title: (response && response.fieldErrors) ? 'Validation' : 'Server Error', text: msg });
             }
         });
     }
@@ -271,9 +408,16 @@
     // Expose global functions for inline onclick usage
     window.RegisterUser = RegisterUser;
     window.ClearForm = ClearForm;
+    window.CancelEditOrClear = CancelEditOrClear;
 
     // DOM ready: attach handlers
     $(function () {
+        updateClearButtonLabel();
+
+        if (!$('#hdnUserId').val()) {
+            $('#txtPassword').val('');
+        }
+
         // If grid table exists on the page, load users
         function loadUsers() {
             var $tbl = $("#tblUsers");
@@ -285,6 +429,8 @@
                 type: 'GET',
                 dataType: 'json'
             }).done(function (users) {
+                usersList = users;
+                console.log("Users Loaded:", usersList);
                 // If the endpoint returned an error object instead of an array, show its message
                 if (!Array.isArray(users)) {
                     console.error('GetUsers returned non-array:', users);
@@ -300,7 +446,7 @@
 
                 // populate suggestion datalists
                 try { 
-                    var suggestions = users.map(function(s){ return { Username: s.Username || s.username, Email: s.Email || s.email, Phone: s.Phone || s.phone }; });
+                    var suggestions = users.map(function(s){ return { FirstName: s.FirstName || s.firstName, LastName: s.LastName || s.lastName, Username: s.Username || s.username, Email: s.Email || s.email, Phone: s.Phone || s.phone }; });
                     suggestions.forEach(function(s){ addSuggestionOptions(s); });
                 } catch(e) { }
 
@@ -344,7 +490,7 @@
             }).done(function (users) {
                 if (Array.isArray(users)) {
                     users.forEach(function (u) {
-                        addSuggestionOptions({ Username: u.Username || u.username, Email: u.Email || u.email, Phone: u.Phone || u.phone });
+                        addSuggestionOptions({ FirstName: u.FirstName || u.firstName, LastName: u.LastName || u.lastName, Username: u.Username || u.username, Email: u.Email || u.email, Phone: u.Phone || u.phone });
                     });
                 }
             }).fail(function () { /**/ });
@@ -367,41 +513,63 @@
             $phone.val('03');
         }
 
-        // Prevent typing spaces in certain fields and remove on paste
-        $("#txtFirstName,#txtLastName,#txtEmail,#txtUsername,#txtPassword").on('keydown', function (e) {
-            if (e.which === 32) { // space
-                e.preventDefault();
-                var id = $(this).attr('id');
-                var errId = '#err' + id.replace('txt', '');
-                $(errId).text('No spaces allowed.');
-            }
-        }).on('input', function () {
+        // Validate names, email, username, and password in real time
+        $("#txtFirstName,#txtLastName").on('input', function () {
             var id = $(this).attr('id');
             var errId = '#err' + id.replace('txt', '');
             var val = $(this).val();
-            if (val.indexOf(' ') !== -1) {
-                val = val.replace(/\s+/g, '');
-                $(this).val(val);
-                $(errId).text('No spaces allowed.');
-                return;
+            var sanitized = val.replace(/[^A-Za-z\s]/g, '');
+            if (sanitized !== val) {
+                $(this).val(sanitized);
+                val = sanitized;
             }
-            // Clear specific errors when field becomes valid
-            if (id === 'txtEmail') {
-                if (val.length > 0 && emailFormat.test(val) && /[A-Za-z]/.test(val) && /\d/.test(val)) $(errId).text('');
-            } else if (id === 'txtUsername') {
-                if (val.length > 0 && usernameRegex.test(val)) $(errId).text('');
-            } else if (id === 'txtPassword') {
-                if (val.length > 0 && !/\s/.test(val) && passwordRegex.test(val)) $(errId).text('');
+
+            if (!val.trim()) {
+                $(errId).text(id === 'txtFirstName' ? 'First Name is required.' : 'Last Name is required.');
+            } else if (!nameRegex.test(val.trim())) {
+                $(errId).text(id === 'txtFirstName' ? 'First Name can only contain letters and spaces.' : 'Last Name can only contain letters and spaces.');
             } else {
-                if (val.length > 0) $(errId).text('');
+                $(errId).text('');
             }
         });
 
-        // Username: strip non-letter characters immediately
+        $("#txtEmail").on('input', function () {
+            var val = $(this).val().toLowerCase();
+            if ($(this).val() !== val) {
+                $(this).val(val);
+            }
+
+            if (!val) {
+                $("#errEmail").text('Email is required.');
+            } else if (!emailFormat.test(val)) {
+                $("#errEmail").text('Email must be lowercase and use a valid format.');
+            } else {
+                $("#errEmail").text('');
+            }
+        });
+
         $("#txtUsername").on('input', function () {
-            var newVal = $(this).val().replace(/[^A-Za-z]/g, '');
-            $(this).val(newVal);
-            if (newVal.length > 0 && usernameRegex.test(newVal)) $("#errUsername").text('');
+            var val = $(this).val().toLowerCase();
+            if ($(this).val() !== val) {
+                $(this).val(val);
+            }
+            val = val.replace(/[^a-z]/g, '');
+            $(this).val(val);
+
+            if (!val) {
+                $("#errUsername").text('Username is required.');
+            } else if (!usernameRegex.test(val)) {
+                $("#errUsername").text('Username must contain lowercase letters only.');
+            } else {
+                $("#errUsername").text('');
+            }
+        });
+
+        $("#txtPassword").on('input', function () {
+            var val = $(this).val();
+            if (val.length > 0 && !/\s/.test(val) && passwordRegex.test(val)) {
+                $("#errPassword").text('');
+            }
         });
 
         // Phone handling: enforce prefix 03, sanitize digits, prevent deleting prefix
@@ -530,8 +698,8 @@
                                 var val = data[key];
                                 if (val === null || typeof val === 'undefined') val = '';
                                 if (key.toLowerCase() === 'password') {
-                                    // Do not populate password from server; leave blank for security
-                                    val = '';
+                                    // Preserve the existing password when editing so the form is prefilled.
+                                    val = (val === null || typeof val === 'undefined') ? '' : String(val);
                                 }
                                 if (input.is(':checkbox')) {
                                     input.prop('checked', !!val);
