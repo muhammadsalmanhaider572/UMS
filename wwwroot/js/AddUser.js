@@ -7,6 +7,12 @@
     'use strict';
     // Store all users loaded from database
     var usersList = [];
+
+    var currentPage = 1;
+    var pageSize = 10;
+    var totalPages = 1;
+
+
     // Validation regexes
     var emailFormat = /^[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
     var usernameRegex = /^[a-z]+$/; // lowercase letters only
@@ -319,21 +325,7 @@
                     var email = updated && (updated.email || updated.Email) ? (updated.email || updated.Email) : user.Email;
                     var phone = updated && (updated.phone || updated.Phone) ? (updated.phone || updated.Phone) : user.Phone;
                     var username = updated && (updated.username || updated.Username) ? (updated.username || updated.Username) : user.Username;
-                    var createdDate = updated && (updated.createdDate || updated.CreatedDate) ? (updated.createdDate || updated.CreatedDate) : null;
-
-                    var rowHtml = '<tr>' +
-                        '<td>' + (id || '') + '</td>' +
-                        '<td>' + firstName + '</td>' +
-                        '<td>' + lastName + '</td>' +
-                        '<td>' + email + '</td>' +
-                        '<td>' + phone + '</td>' +
-                        '<td>' + username + '</td>' +
-                        '<td>' + (createdDate ? FormatDate(createdDate) : '') + '</td>' +
-                        '<td>' +
-                            '<button type="button" class="btn btn-warning btn-sm editBtn" data-id="' + (id || '') + '" data-url="/RegistrationUser/RegistrationUser" data-json-url="/RegistrationUser/GetUser/' + (id || '') + '" title="Edit"><i class="bi bi-pencil-square"></i></button> ' +
-                            '<button type="button" class="btn btn-danger btn-sm deleteBtn" data-id="' + (id || '') + '" data-url="/RegistrationUser/Delete" title="Delete"><i class="bi bi-trash"></i></button>' +
-                        '</td>' +
-                        '</tr>';
+                    var createdDate = updated && (updated.createdDate || updated.CreatedDate) ? (updated.createdDate || updated.CreatedDate) : 
 
                     Swal.fire({ icon: 'success', title: 'Success', text: (response && response.message) ? response.message : 'Saved' }).then(function () {
                         if (!user || !user.Id || parseInt(user.Id) <= 0) {
@@ -412,6 +404,31 @@
 
     // DOM ready: attach handlers
     $(function () {
+        $(document).on("click", "#btnPrev", function () {
+
+            if (currentPage > 1) {
+
+                currentPage--;
+
+                loadUsers();
+
+            }
+
+        });
+
+        $(document).on("click", "#btnNext", function () {
+
+            if (currentPage < totalPages) {
+
+                currentPage++;
+
+                loadUsers();
+
+            }
+
+        });
+
+
         updateClearButtonLabel();
 
         if (!$('#hdnUserId').val()) {
@@ -420,67 +437,96 @@
 
         // If grid table exists on the page, load users
         function loadUsers() {
-            var $tbl = $("#tblUsers");
-            if ($tbl.length === 0) return;
-            var $tbody = $tbl.find('tbody');
-            $tbody.html('<tr><td colspan="8" class="text-center">Loading...</td></tr>');
+
             $.ajax({
-                url: '/RegistrationUser/GetUsers',
-                type: 'GET',
-                dataType: 'json'
-            }).done(function (users) {
-                usersList = users;
-                console.log("Users Loaded:", usersList);
-                // If the endpoint returned an error object instead of an array, show its message
-                if (!Array.isArray(users)) {
-                    console.error('GetUsers returned non-array:', users);
-                    var msg = (users && users.message) ? users.message : 'Unexpected response from server';
-                    $tbody.html('<tr><td colspan="8" class="text-center text-danger">' + msg + '</td></tr>');
-                    return;
+
+                url: "/RegistrationUser/GetUsers",
+
+                type: "GET",
+
+                data: {
+
+                    pageNumber: currentPage,
+
+                    pageSize: pageSize,
+
+                    search: $("#txtSearch").val()
+
+                },
+
+                success: function (response) {
+
+                    usersList = response.data;
+
+                    totalPages = Math.ceil(response.totalRecords / pageSize);
+
+                    if (totalPages == 0)
+                        totalPages = 1;
+
+                    $("#pageInfo").text("Page " + currentPage + " of " + totalPages);
+
+                    $("#btnPrev").prop("disabled", currentPage == 1);
+
+                    $("#btnNext").prop("disabled", currentPage >= totalPages);
+
+                    var tbody = $("#tblUsers tbody");
+
+                    tbody.empty();
+
+                    if (!response.data || response.data.length === 0) {
+                        tbody.append(`
+                    <tr>
+                        <td colspan="8" class="text-center">
+                            No Users Found
+                        </td>
+                    </tr>`);
+
+                        return;
+                    }
+
+                    $.each(response.data, function (i, user) {
+
+                        tbody.append(`
+                    <tr>
+
+                        <td>${user.id ?? user.Id}</td>
+
+                        <td>${user.firstName ?? user.FirstName}</td>
+
+                        <td>${user.lastName ?? user.LastName}</td>
+
+                        <td>${user.email ?? user.Email}</td>
+
+                        <td>${user.phone ?? user.Phone}</td>
+
+                        <td>${user.username ?? user.Username}</td>
+
+                        <td>${FormatDate(user.createdDate ?? user.CreatedDate)}</td>
+
+                        <td>
+
+                            <button class="btn btn-warning btn-sm editBtn"
+                                    data-id="${user.id ?? user.Id}">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+
+                            <button class="btn btn-danger btn-sm deleteBtn"
+                                    data-id="${user.id ?? user.Id}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+
+                        </td>
+
+                    </tr>
+                `);
+
+                    });
+
                 }
 
-                if (users.length === 0) {
-                    $tbody.html('<tr><td colspan="8" class="text-center">No users found</td></tr>');
-                    return;
-                }
-
-                // populate suggestion datalists
-                try { 
-                    var suggestions = users.map(function(s){ return { FirstName: s.FirstName || s.firstName, LastName: s.LastName || s.lastName, Username: s.Username || s.username, Email: s.Email || s.email, Phone: s.Phone || s.phone }; });
-                    suggestions.forEach(function(s){ addSuggestionOptions(s); });
-                } catch(e) { }
-
-                var rows = users.map(function (u) {
-                    var id = (u.Id || u.id || '');
-                    return '<tr>' +
-                        '<td>' + id + '</td>' +
-                        '<td>' + (u.FirstName || u.firstName || '') + '</td>' +
-                        '<td>' + (u.LastName || u.lastName || '') + '</td>' +
-                        '<td>' + (u.Email || u.email || '') + '</td>' +
-                        '<td>' + (u.Phone || u.phone || '') + '</td>' +
-                        '<td>' + (u.Username || u.username || '') + '</td>' +
-                        '<td>' + (u.CreatedDate || u.createdDate || '') + '</td>' +
-                        '<td>' +
-                            '<button type="button" class="btn btn-warning btn-sm editBtn" data-id="' + id + '" data-url="/RegistrationUser/RegistrationUser" data-json-url="/RegistrationUser/GetUser/' + id + '" title="Edit"><i class="bi bi-pencil-square"></i></button> ' +
-                            '<button type="button" class="btn btn-danger btn-sm deleteBtn" data-id="' + id + '" data-url="/RegistrationUser/Delete" title="Delete"><i class="bi bi-trash"></i></button>' +
-                        '</td>' +
-                        '</tr>';
-                }).join('');
-                $tbody.html(rows);
-            }).fail(function (xhr, status, err) {
-                var text = 'Failed to load users';
-                try {
-                    if (xhr && xhr.responseJSON && xhr.responseJSON.message) text = xhr.responseJSON.message;
-                    else if (xhr && xhr.responseText) text = xhr.responseText;
-                } catch (e) { /**/ }
-                console.error('GetUsers failed', status, err, xhr);
-                $tbody.html('<tr><td colspan="8" class="text-center text-danger">' + $('<div/>').text(text).html() + '</td></tr>');
             });
+
         }
-
-        // call once on ready
-        loadUsers();
-
         // If datalists for suggestions exist on pages without the users table (e.g., registration page), populate them
         if ($('#usernameList').length || $('#emailList').length || $('#phoneList').length) {
             $.ajax({

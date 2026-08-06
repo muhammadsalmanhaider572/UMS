@@ -140,29 +140,23 @@ namespace UMS.Controllers
         // GET ALL USERS
         //==========================================
         [HttpGet("/RegistrationUser/GetUsers")]
-        public IActionResult GetUsers()
+        public IActionResult GetUsers(
+     int pageNumber = 1,
+     int pageSize = 10,
+     string search = "")
         {
             try
             {
-                var users = _service.GetUsers();
-                return Json(users);
+                var result = _service.GetUsers(pageNumber, pageSize, search);
+
+                return Json(result);
             }
             catch (Exception ex)
             {
-                if (_env.IsDevelopment())
-                {
-                    return StatusCode(500, new
-                    {
-                        success = false,
-                        message = ex.Message,
-                        detail = ex.ToString()
-                    });
-                }
-
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "Unable to load users."
+                    message = ex.Message
                 });
             }
         }

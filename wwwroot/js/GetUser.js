@@ -12,87 +12,87 @@ $(document).ready(function () {
 // Load Users
 //==========================================
 
-function LoadUsers() {
+// function LoadUsers() {
 
-    $.ajax({
+//     $.ajax({
 
-        url: "/RegistrationUser/GetUsers",
+//         url: "/RegistrationUser/GetUsers",
 
-        type: "GET",
+//         type: "GET",
 
-        dataType: "json",
+//         dataType: "json",
 
-        success: function (response) {
+//         success: function (response) {
 
-            $("#tblUsers tbody").empty();
+//             $("#tblUsers tbody").empty();
 
-            if (response == null || response.length == 0) {
+//             if (response == null || response.length == 0) {
 
-                $("#tblUsers tbody").append(`
-                    <tr>
-                        <td colspan="8" class="text-center">
-                            No Users Found
-                        </td>
-                    </tr>
-                `);
+//                 $("#tblUsers tbody").append(`
+//                     <tr>
+//                         <td colspan="8" class="text-center">
+//                             No Users Found
+//                         </td>
+//                     </tr>
+//                 `);
 
-                return;
-            }
+//                 return;
+//             }
 
-            $.each(response, function (index, user) {
+//             $.each(response, function (index, user) {
 
-                var row = `
-                    <tr>
+//                 var row = `
+//                     <tr>
 
-                        <td>${user.id ?? user.Id}</td>
+//                         <td>${user.id ?? user.Id}</td>
 
-                        <td>${user.firstName ?? user.FirstName}</td>
+//                         <td>${user.firstName ?? user.FirstName}</td>
 
-                        <td>${user.lastName ?? user.LastName}</td>
+//                         <td>${user.lastName ?? user.LastName}</td>
 
-                        <td>${user.email ?? user.Email}</td>
+//                         <td>${user.email ?? user.Email}</td>
 
-                        <td>${user.phone ?? user.Phone}</td>
+//                         <td>${user.phone ?? user.Phone}</td>
 
-                        <td>${user.username ?? user.Username}</td>
+//                         <td>${user.username ?? user.Username}</td>
 
-                        <td>${FormatDate(user.createdDate ?? user.CreatedDate)}</td>
+//                         <td>${FormatDate(user.createdDate ?? user.CreatedDate)}</td>
 
-                        <td>
-                            <button type="button" class="btn btn-warning btn-sm editBtn" data-id="${user.id ?? user.Id}" data-url="/RegistrationUser/RegistrationUser" data-json-url="/RegistrationUser/GetUser/${user.id ?? user.Id}" title="Edit">
-                                <i class="bi bi-pencil-square"></i>
-                            </button>
-                            <button type="button" class="btn btn-danger btn-sm deleteBtn" data-id="${user.id ?? user.Id}" data-url="/RegistrationUser/Delete" title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
+//                         <td>
+//                             <button type="button" class="btn btn-warning btn-sm editBtn" data-id="${user.id ?? user.Id}" data-url="/RegistrationUser/RegistrationUser" data-json-url="/RegistrationUser/GetUser/${user.id ?? user.Id}" title="Edit">
+//                                 <i class="bi bi-pencil-square"></i>
+//                             </button>
+//                             <button type="button" class="btn btn-danger btn-sm deleteBtn" data-id="${user.id ?? user.Id}" data-url="/RegistrationUser/Delete" title="Delete">
+//                                 <i class="bi bi-trash"></i>
+//                             </button>
+//                         </td>
 
-                    </tr>
-                `;
+//                     </tr>
+//                 `;
 
-                $("#tblUsers tbody").append(row);
+//                 $("#tblUsers tbody").append(row);
 
-            });
+//             });
 
-        },
+//         },
 
-        error: function (xhr) {
+//         error: function (xhr) {
 
-            console.log(xhr);
+//             console.log(xhr);
 
-            $("#tblUsers tbody").html(`
-                <tr>
-                    <td colspan="8" class="text-center text-danger">
-                        Failed to load users.
-                    </td>
-                </tr>
-            `);
+//             $("#tblUsers tbody").html(`
+//                 <tr>
+//                     <td colspan="8" class="text-center text-danger">
+//                         Failed to load users.
+//                     </td>
+//                 </tr>
+//             `);
 
-        }
+//         }
 
-    });
+//     });
 
-}
+// }
 
 //==========================================
 // Format Date

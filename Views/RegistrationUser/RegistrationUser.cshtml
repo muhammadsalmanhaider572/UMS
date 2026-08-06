@@ -8,61 +8,136 @@
 
         <div class="card-body">
 
-            <div class="row">
-                <input type="hidden"
-                       id="hdnUserId"
-                       value="@(ViewBag.User != null ? ViewBag.User.Id : "")" />
+            <input type="hidden"
+                   id="hdnUserId"
+                   value="@(ViewBag.User != null ? ViewBag.User.Id : "")" />
 
+            <div class="row">
+
+                <!-- First Name -->
                 <div class="col-md-6 mb-3">
-                    <label>First Name</label>
-                    <input type="text" id="txtFirstName" class="form-control" list="firstNameList" value="@(ViewBag.User != null ? ViewBag.User.FirstName : "")">
+                    <label class="form-label">First Name</label>
+                    <input type="text"
+                           id="txtFirstName"
+                           class="form-control"
+                           list="firstNameList"
+                           value="@(ViewBag.User != null ? ViewBag.User.FirstName : "")">
+
                     <datalist id="firstNameList"></datalist>
                     <small id="errFirstName" class="text-danger"></small>
                 </div>
 
+                <!-- Last Name -->
                 <div class="col-md-6 mb-3">
-                    <label>Last Name</label>
-                    <input type="text" id="txtLastName" class="form-control" list="lastNameList" value="@(ViewBag.User != null ? ViewBag.User.LastName : "")">
+                    <label class="form-label">Last Name</label>
+                    <input type="text"
+                           id="txtLastName"
+                           class="form-control"
+                           list="lastNameList"
+                           value="@(ViewBag.User != null ? ViewBag.User.LastName : "")">
+
                     <datalist id="lastNameList"></datalist>
                     <small id="errLastName" class="text-danger"></small>
                 </div>
 
+                <!-- Username -->
                 <div class="col-md-6 mb-3">
-                    <label>Email</label>
-                    <input type="email" id="txtEmail" class="form-control" list="emailList" value="@(ViewBag.User != null ? ViewBag.User.Email : "")">
-                    <datalist id="emailList"></datalist>
-                    <small id="errEmail" class="text-danger"></small>
-                </div>
+                    <label class="form-label">Username</label>
+                    <input type="text"
+                           id="txtUsername"
+                           class="form-control"
+                           list="usernameList"
+                           value="@(ViewBag.User != null ? ViewBag.User.Username : "")">
 
-                <div class="col-md-6 mb-3">
-                    <label>Phone</label>
-                    <input type="text" id="txtPhone" class="form-control" list="phoneList" value="@(ViewBag.User != null ? ViewBag.User.Phone : "03")">
-                    <datalist id="phoneList"></datalist>
-                    <small id="errPhone" class="text-danger"></small>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label>Username</label>
-                    <input type="text" id="txtUsername" class="form-control" list="usernameList" value="@(ViewBag.User != null ? ViewBag.User.Username : "")">
                     <datalist id="usernameList"></datalist>
                     <small id="errUsername" class="text-danger"></small>
                 </div>
 
+                <!-- Email -->
                 <div class="col-md-6 mb-3">
-                    <label>Password</label>
+                    <label class="form-label">Email</label>
+                    <input type="email"
+                           id="txtEmail"
+                           class="form-control"
+                           list="emailList"
+                           value="@(ViewBag.User != null ? ViewBag.User.Email : "")">
+
+                    <datalist id="emailList"></datalist>
+                    <small id="errEmail" class="text-danger"></small>
+                </div>
+
+                <!-- Phone -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="text"
+                           id="txtPhone"
+                           class="form-control"
+                           list="phoneList"
+                           value="@(ViewBag.User != null ? ViewBag.User.Phone : "03")">
+
+                    <datalist id="phoneList"></datalist>
+                    <small id="errPhone" class="text-danger"></small>
+                </div>
+
+                <!-- Role -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Role</label>
+
+                    <select id="ddlRole" class="form-select">
+                        <option value="">-- Select Role --</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Employee">Employee</option>
+                    </select>
+
+                    <small id="errRole" class="text-danger"></small>
+                </div>
+
+                <!-- Password -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Password</label>
+
                     <div class="input-group">
-                        <input type="password" id="txtPassword" class="form-control" value="@(ViewBag.EditUser == true && ViewBag.User != null ? ViewBag.User.Password : "")" autocomplete="@(ViewBag.EditUser == true ? "current-password" : "new-password")">
-                        <button class="btn btn-outline-secondary btn-toggle-password" type="button" id="btnTogglePassword" title="Show/Hide Password">
+                        <input type="password"
+                               id="txtPassword"
+                               class="form-control"
+                               autocomplete="new-password">
+
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                id="btnTogglePassword">
                             <i class="bi bi-eye" id="pwdIcon"></i>
                         </button>
                     </div>
+
                     <small id="errPassword" class="text-danger"></small>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Confirm Password</label>
+
+                    <div class="input-group">
+                        <input type="password"
+                               id="txtConfirmPassword"
+                               class="form-control"
+                               autocomplete="new-password">
+
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                id="btnToggleConfirmPassword">
+                            <i class="bi bi-eye" id="confirmPwdIcon"></i>
+                        </button>
+                    </div>
+
+                    <small id="errConfirmPassword" class="text-danger"></small>
                 </div>
 
             </div>
 
             <button type="button"
-                    class="btn btn-success" id="btnRegister"
+                    class="btn btn-success"
+                    id="btnRegister"
                     onclick="RegisterUser()">
                 @(ViewBag.EditUser == true ? "Update" : "Register")
             </button>
