@@ -1,7 +1,7 @@
 using Microsoft.Data.SqlClient;
 using System.Data;
-using UMS.Services.Interfaces;
 using UMS.Services;
+using UMS.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +15,17 @@ builder.Services.AddScoped<IDbConnection>(sp =>
         configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddScoped<UMS.Services.Interfaces.IRegistrationUserService, UMS.Services.RegistrationUserService>();
+builder.Services.AddScoped<IRegistrationUserService, RegistrationUserService>();
+
+// Session
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
@@ -24,10 +34,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseSession();
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Login}/{action=Login}/{id?}");
 
 app.Run();

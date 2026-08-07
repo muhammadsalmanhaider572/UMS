@@ -1,25 +1,26 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using UMS.Models;
 
 namespace UMS.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        public IActionResult Dashboard()
         {
+            if (HttpContext.Session.GetString("Username") == null)
+            {
+                return RedirectToAction("Login", "Login");
+            }
+
+            ViewBag.Username = HttpContext.Session.GetString("Username");
+
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult Logout()
         {
-            return View();
-        }
+            HttpContext.Session.Clear();
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return RedirectToAction("Login", "Login");
         }
     }
 }
